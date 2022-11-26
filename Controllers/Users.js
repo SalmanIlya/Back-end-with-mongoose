@@ -38,22 +38,26 @@ module.exports = {
   },
   LoginUser: async (req, res) => {
     try {
-      const user = await Users.findOne();
+      const user = await Users.findOne({ username: req.body.username });
+      const hashpassword = CryptoJS.RC4.decrypt(
+        user.password,
+        process.env.pass
+      );
+      const hpassword = hashpassword.toString(CryptoJS.enc.Utf8);
       if (!user) {
         res.status(404).json({
-          massage: "user not found",
+          massage: "user is not avalable ",
         });
       } else {
-        const hashpassword = CryptoJS.RC4.decrypt(
-          user.password,
-          process.env.pass
-        );
-        const password = hashpassword.toString(CryptoJS.enc.Utf8);
-
-        if (password === req.body.password) {
-          res.status(200).json({
-            massage: "user login succesfully",
+        if (hpassword !== req.body.password) {
+          res.status(404).json({
+            massage: "password does not match",
           });
+        } else {
+          if (hpassword === req.body.password) {
+            const { password, ...other } = user._doc;
+            res.send(other);
+          }
         }
       }
     } catch (err) {
