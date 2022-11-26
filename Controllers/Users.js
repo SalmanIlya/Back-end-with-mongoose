@@ -9,7 +9,10 @@ module.exports = {
     const user = new Users({
       username: req.body.username,
       email: req.body.email,
-      password: req.body.password,
+      password: CryptoJS.RC4.encrypt(
+        req.body.password,
+        process.env.pass
+      ).toString(),
     });
     try {
       const item = await user.save();
@@ -41,7 +44,13 @@ module.exports = {
           massage: "user not found",
         });
       } else {
-        if (user.password === req.body.password) {
+        const hashpassword = CryptoJS.RC4.decrypt(
+          user.password,
+          process.env.pass
+        );
+        const password = hashpassword.toString(CryptoJS.enc.Utf8);
+
+        if (password === req.body.password) {
           res.status(200).json({
             massage: "user login succesfully",
           });
