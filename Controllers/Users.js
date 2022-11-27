@@ -39,32 +39,35 @@ module.exports = {
   LoginUser: async (req, res) => {
     try {
       const user = await Users.findOne({ username: req.body.username });
+      !user &&
+        res.status(404).json({
+          massage: "user is not avalable ",
+        });
+
       const hashpassword = CryptoJS.RC4.decrypt(
         user.password,
         process.env.pass
       );
       const hpassword = hashpassword.toString(CryptoJS.enc.Utf8);
-      if (!user) {
+      hpassword !== req.body.password &&
         res.status(404).json({
-          massage: "user is not avalable ",
+          massage: "password does not match",
         });
-      } else {
-        if (hpassword !== req.body.password) {
-          res.status(404).json({
-            massage: "password does not match",
-          });
-        } else {
-          if (hpassword === req.body.password) {
-            const { password, ...other } = user._doc;
-            res.send(other);
-          }
-        }
-      }
+
+      const accessTocken = jwt.sign(
+        {
+          id: user._id,
+        },
+        process.env.secrit_key
+      );
+      const { password, ...other } = user._doc;
+      res.status(202).json({ ...other, accessTocken });
     } catch (err) {
       res.status(500).json({
         massage: "error ",
         err,
       });
+      console.log(err);
     }
   },
 };
