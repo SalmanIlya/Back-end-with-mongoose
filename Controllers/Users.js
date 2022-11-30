@@ -29,7 +29,10 @@ module.exports = {
   // get all user
   allUser: async (req, res) => {
     try {
-      const user = await Users.find();
+      const query = req.query.new;
+      const user = query
+        ? await Users.find().sort({ _id: -1 }).limit(2)
+        : await Users.find();
       res.send(user);
     } catch (err) {
       res.status(500).json({

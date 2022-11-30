@@ -8,7 +8,7 @@ const {
 
 const route = express.Router();
 
-route.post("/user", Users.userRouter);
+route.post("/user", verifyAdminTockenandAuth, Users.userRouter);
 route.post("/login", Users.LoginUser);
 route.put("/:id", verifyTockenandAuth, Users.UpdateUser);
 route.delete("/:id", verifyTockenandAuth, Users.deleteUser);
